@@ -16,6 +16,6 @@ public class EmpacadorIslas {
 
   //creacion del algoritmo genetico
   Genetico empacador = new Genetico();
-  empacador.correr(30, 30, (float) 2 / 3);
+  empacador.correr(45, 45, (float) 2 / 3);
  }
 }

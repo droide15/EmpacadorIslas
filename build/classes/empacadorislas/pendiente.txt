@@ -1,0 +1,116 @@
+
+	public static void main (String[] args) throws java.lang.Exception
+	{
+		int M = 4; //islas
+		int N = 45; //poblacion
+		int gen = 45; //generaciones
+		float subpob = (float)2/3;
+		int padres = (int)((float) N * subpob);
+		
+		Genetico genetico = new Genetico(M, N, subpob, padres);
+		genetico.correr(100);
+	}
+	
+	//algoritmo genetico
+	static class Genetico { //empacador a la tetris con islas
+		//atributos
+		Isla islas;
+		//parametros
+		int M;
+		int N;
+		float subpob;
+		int padres;
+		
+		//constructor
+		public Genetico(int M, int N, int gen, float subpob, int padres) {
+			this.M = M;
+			this.N = N;
+			this.subpob = subpob;
+			this.padres = padres;
+		}
+		
+		//ejecucion del algoritmo
+		void correr(int gen) {
+			//inicializacion de las islas
+			inicializarIslas();
+			
+			for (int g = 0; g < gen; g++) {
+				//migracion entre islas
+				migracion();
+				
+				//evaluacion de la siguiente generacion
+				evaluacionSig();
+				
+				//checa si se cumple convergencia global
+				if (converGlobal())
+					break;
+			}
+		}
+		
+		//inicializacion de las islas
+		void inicializarIslas() {
+			for(int m = 0; m < M; m++) {
+				islas[m] = new Isla(N, padres);
+				islas[m].inicializar();
+			}
+			
+			islas[0].veci_prev = M - 1;
+			islas[0].veci_sig = 1;
+			islas[M - 1].veci_prev = M - 2;
+			islas[M - 1].veci_sig = 0;
+			for (int v = 1; v < M-1; v++) {
+				islas[v].veci_prev = v - 1;
+				islas[v].veci_sig = v + 1;
+			}
+		}
+		
+		//migracion entre islas
+		void migracion() {
+			for(int i = 0; i < padres*M/20; i++){
+				boolean exito = false;
+				while(!exito){
+					int islaA = rand.nextInt(M);
+					int islaB;
+					if (rand.nextInt(1) == 0)
+						islaB = islas[islaA].veci_prev;
+					else
+						islaB = islas[islaA].veci_sig;
+					exito = Isla.migrar(padres, islas[islaA], islas[islaB]);
+				}
+			}
+		}
+		
+		//evaluacion de siguiente generacion
+		void evaluacionSig() {
+			for (int m = 0; m < M; m++)
+				islas[m].evaluarSig();
+		}
+		
+		//checa convergencia global
+		boolean converGlobal(){
+			int opt_conv = islas[0].soluciones[0].aptitud;
+			
+			for(int m = 0; m < M; m++)
+				if(!islas[m].converLocal() || islas[m].soluciones[0].aptitud != opt_conv)
+					return false:
+			return true;
+		}
+	}
+	
+	//isla
+	static class Isla {
+		//intentar migrar
+		static boolean migrar(int padres, Isla islaA, Isla IslaB){
+			int solA = rand.nextInt(padres);
+			int solB = rand.nextInt(padres);
+			if(islaA.soluciones[solA].migrando || islaB.soluciones[solB].migrando)
+				return false;
+			islaA.soluciones[solA].migrando = true;
+			islaB.soluciones[solB].migrando = true;
+			Solucion temp = islaA.soluciones[solA];
+			islaA.soluciones[solA] = islaB.soluciones[solB];
+			islaB.soluciones[solB] = temp;
+			return true;
+		}
+	}
+}
